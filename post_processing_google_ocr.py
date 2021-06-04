@@ -2,6 +2,7 @@ import gzip
 import json
 
 from pathlib import Path
+from antx import transfer
 
 def read_json(fn):
     with gzip.open(fn, "rb") as f:
@@ -24,7 +25,7 @@ def get_avg_line_height(chars):
     return avg_height
 
 def is_in_cur_line(prev_char, char, avg_height):
-    if get_y_avg(char)- get_y_avg(prev_char) < 12.5:
+    if get_y_avg(char)- get_y_avg(prev_char) < avg_height/10:
         return True
     else:
         return False
@@ -58,10 +59,22 @@ def get_vol_content(vol_path):
     for page_path in page_paths:
         page = read_json(page_path)
         if page:
-            vol_content += f'{page_path.stem}\n{get_page_content(page)}\n\n'
+            vol_content += f'{get_page_content(page)}\n\n'
     return vol_content
 
+def transfer_space(base_with_space, base_without_space):
+    new_base = transfer(
+        base_with_space,[
+        ["space",r"( )"],
+        ],
+        base_without_space,
+        output="txt",
+    )
+    return new_base
+
 if __name__ == "__main__":
-    vol_path = Path('./data/json/I2KG212285')
+    vol_path = Path('./data/json/I1KG13170')
+    old_base = Path('./data/old_base/v001.txt').read_text(encoding='utf-8')
     vol_content = get_vol_content(vol_path)
-    Path(f'./data/text/{vol_path.stem}.txt').write_text(vol_content, encoding='utf-8')
+    new_base = transfer_space(old_base, vol_content)
+    Path(f'./data/text/{vol_path.stem}.txt').write_text(new_base, encoding='utf-8')
