@@ -1,8 +1,11 @@
 import gzip
 import json
+import logging
 
 from pathlib import Path
 from antx import transfer
+
+logging.basicConfig(filename="postprocessing_issue.log", level=logging.DEBUG, filemode="w")
 
 def read_json(fn):
     with gzip.open(fn, "rb") as f:
@@ -18,8 +21,8 @@ def get_bounding_poly_mid(bounding_poly):
     Returns:
         float: mid point's y coordinate of bounding poly
     """
-    y1 = bounding_poly["boundingPoly"]["vertices"][0]["y"]
-    y2 = bounding_poly["boundingPoly"]["vertices"][2]["y"]
+    y1 = bounding_poly["boundingPoly"]["vertices"][0].get('y', 0)
+    y2 = bounding_poly["boundingPoly"]["vertices"][2].get('y', 0)
     y_avg = (y1 + y2) / 2
     return y_avg
 
@@ -34,8 +37,8 @@ def get_avg_bounding_poly_height(bounding_polys):
     """
     height_sum = 0
     for bounding_poly in bounding_polys:
-        y1 = bounding_poly["boundingPoly"]["vertices"][0]["y"]
-        y2 = bounding_poly["boundingPoly"]["vertices"][2]["y"]
+        y1 = bounding_poly["boundingPoly"]["vertices"][0].get('y', 0)
+        y2 = bounding_poly["boundingPoly"]["vertices"][2].get('y', 0)
         height_sum += y2 - y1
     avg_height = height_sum / len(bounding_polys)
     return avg_height
@@ -99,6 +102,7 @@ def get_vol_content(vol_path):
         page = read_json(page_path)
         if page:
             vol_content += f'{get_page_content(page)}\n\n'
+        logging.info(f'{page_path} completed..')
     return vol_content
 
 def transfer_space(base_with_space, base_without_space):
