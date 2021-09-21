@@ -25,13 +25,13 @@ def get_avg_line_height(chars):
     return avg_height
 
 def is_in_cur_line(prev_char, char, avg_height):
-    if get_y_avg(char)- get_y_avg(prev_char) < avg_height/10:
+    if get_y_avg(char)- get_y_avg(prev_char)< avg_height/10:
         return True
     else:
         return False
 
 def get_lines(chars):
-    prev_char = chars[1]
+    prev_char = chars[0]
     lines = []
     cur_line = ''
     avg_line_height = get_avg_line_height(chars)
@@ -47,16 +47,19 @@ def get_lines(chars):
     return lines
 
 def get_page_content(page):
+    postprocessed_page_content =''
+    page_content = page['textAnnotations'][0]['description']
     chars = page['textAnnotations'][1:]
     lines = get_lines(chars)
-    page_content = "\n".join(lines)
-    return page_content
+    page_content_without_space = "\n".join(lines)
+    postprocessed_page_content = transfer_space(page_content, page_content_without_space)
+    return postprocessed_page_content
 
 def get_vol_content(vol_path):
     vol_content = ''
     page_paths = list(vol_path.iterdir())
     page_paths.sort()
-    for page_path in page_paths:
+    for pg_num, page_path in enumerate(page_paths,1):
         page = read_json(page_path)
         if page:
             vol_content += f'{get_page_content(page)}\n\n'
@@ -72,9 +75,15 @@ def transfer_space(base_with_space, base_without_space):
     )
     return new_base
 
+def process_pecha(pecha_path, output_path):
+    vol_paths = list(Path(pecha_path).iterdir())
+    vol_paths.sort()
+    for vol_path in vol_paths:
+        vol_content = get_vol_content(vol_path)
+        (Path(output_path) / f'{vol_path.stem}.txt').write_text(vol_content, encoding='utf-8')
+        print(f'{vol_path.stem} completed...')
+
 if __name__ == "__main__":
-    vol_path = Path('./data/json/I1KG13170')
-    old_base = Path('./data/old_base/v001.txt').read_text(encoding='utf-8')
-    vol_content = get_vol_content(vol_path)
-    new_base = transfer_space(old_base, vol_content)
-    Path(f'./data/text/{vol_path.stem}.txt').write_text(new_base, encoding='utf-8')
+    pecha_path = './data/json/P000008/'
+    output_path = './data/text/P000008'
+    process_pecha(pecha_path, output_path)
