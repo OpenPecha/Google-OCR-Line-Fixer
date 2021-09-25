@@ -14,10 +14,10 @@ def read_json(fn):
 
 def get_bounding_poly_mid(bounding_poly):
     """Calculate middle of the bounding poly vertically using y coordinates of the bounding poly
-
+​
     Args:
         bounding_poly (dict): bounding poly's details
-
+​
     Returns:
         float: mid point's y coordinate of bounding poly
     """
@@ -28,10 +28,10 @@ def get_bounding_poly_mid(bounding_poly):
 
 def get_avg_bounding_poly_height(bounding_polys):
     """Calculate the average height of bounding polys in page
-
+​
     Args:
         bounding_polys (list): list of boundingpolys
-
+​
     Returns:
         float: average height of bounding ploys
     """
@@ -46,12 +46,12 @@ def get_avg_bounding_poly_height(bounding_polys):
 def is_in_cur_line(prev_bounding_poly, bounding_poly, avg_height):
     """Check if bounding poly is in same line as previous bounding poly
     a threshold to check the conditions set to 10 but it can varies for pecha to pecha
-
+​
     Args:
         prev_bounding_poly (dict): previous bounding poly
         bounding_poly (dict): current bounding poly
         avg_height (float): average height of all the bounding polys in page
-
+​
     Returns:
         boolean: true if bouding poly is in same line as previous bounding poly else false
     """
@@ -68,10 +68,10 @@ def get_lines(bounding_polys):
     avg_line_height = get_avg_bounding_poly_height(bounding_polys)
     for bounding_poly in bounding_polys:
         if is_in_cur_line(prev_bounding_poly, bounding_poly, avg_line_height):
-            cur_line += bounding_poly['description']
+            cur_line += bounding_poly.get("description", "")
         else:
             lines.append(cur_line)
-            cur_line = bounding_poly['description']
+            cur_line = bounding_poly.get("description", "")
         prev_bounding_poly = bounding_poly
     if cur_line:
         lines.append(cur_line)
@@ -79,15 +79,19 @@ def get_lines(bounding_polys):
 
 def get_page_content(page):
     """parse page response to generate page content by reordering the bounding polys
-
+​
     Args:
         page (dict): page content response given by google ocr engine
-
+​
     Returns:
         str: page content
     """
     postprocessed_page_content =''
-    page_content = page['textAnnotations'][0]['description']
+    try:
+        page_content = page['textAnnotations'][0]['description']
+    except:
+        postprocessed_page_content += '---------\n'
+        return postprocessed_page_content
     bounding_polys = page['textAnnotations'][1:]
     lines = get_lines(bounding_polys)
     page_content_without_space = "\n".join(lines)
@@ -107,11 +111,11 @@ def get_vol_content(vol_path):
 
 def transfer_space(base_with_space, base_without_space):
     """transfer space from base with space to without space
-
+​
     Args:
         base_with_space (str): base with space which is extracted from page['textAnnotations'][0]['description']
         base_without_space (str): base without space as it is generated using accumulating non space bounding_poly only
-
+​
     Returns:
         [str]: page content
     """
@@ -133,6 +137,6 @@ def process_pecha(pecha_path, output_path):
         print(f'{vol_path.stem} completed...')
 
 if __name__ == "__main__":
-    pecha_path = './data/json/P000008/'
-    output_path = './data/text/P000008'
+    pecha_path = './data/json/P000009/'
+    output_path = './data/text/P000009'
     process_pecha(pecha_path, output_path)
