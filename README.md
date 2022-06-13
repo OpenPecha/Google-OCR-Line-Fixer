@@ -4,7 +4,7 @@
   <br>
 </h1>
 
-<h3 align="center">Google-ocr-postprocessor</h3>
+<h3 align="center">google-ocr-postprocessor</h3>
 
 
 <!-- Replace the title of the repository -->
