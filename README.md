@@ -19,7 +19,7 @@
 
 ## Description
 
-The repo runs postprocess on the google-ocred s3 bounding poly.
+Fixes lines mixed up in Google OCR output using character coordinates.
 
 <!-- This section provides a high-level overview for the repo -->
 
